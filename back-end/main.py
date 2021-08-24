@@ -31,8 +31,8 @@ def get_questions():
 @app.route('/get_question', methods={'GET'})
 def get_question():
     try:
-        info = request.json
-        question = Questions.query.filter_by(id=info['id']).first()
+        question_id = request.args.get('id')
+        question = Questions.query.filter_by(id=question_id).first()
         question = question_schema.dump(question)
         if question:
             return question, 200
