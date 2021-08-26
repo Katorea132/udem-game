@@ -15,7 +15,7 @@ def add_question():
     except ValueError:
         return "Question with invalid format.", 400
     except TypeError:
-        return "There is no body on the request  or it is incorrect.", 400
+        return "There is no body on the request or it is incorrect.", 400
     except exc.IntegrityError:
         return "Question already in the database.", 403
     return "Question successfully added.", 200
