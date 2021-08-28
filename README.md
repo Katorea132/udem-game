@@ -1,6 +1,10 @@
 # udem-game
 Este es el repositorio tanto para el front (SoonTM) como para el back  del juego para la Universidad de Medellín.
 
+Partes iniciales del front implementadas.
+
+----------------------------------------------------------------------------------
+### Back-End
 ## Requisitos
 
 Tener instaladas en el computador las siguientes herramientas
