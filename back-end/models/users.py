@@ -68,7 +68,7 @@ class Users(db.Model):
         self.unique_token = base64.b64encode(
             hashlib. sha256(
                 bytes(
-                    f"{self.username}{self.password}",
+                    f"{self.username}{self.password.decode()}",
                     encoding='utf-8')).digest())
 
     def __repr__(self):
