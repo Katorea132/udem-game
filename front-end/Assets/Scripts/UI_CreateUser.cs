@@ -1,33 +1,28 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using Proyecto26;
+using System.Text;
+using System.Security.Cryptography;
 
-/// <summary>
-/// Reigns the log in logic.
-/// </summary>
-public class UI_LogIn : MonoBehaviour
+public class UI_CreateUser : MonoBehaviour
 {
-
     [System.Serializable]
-    private struct logInData
+    private struct CreateUserData
     {
         public string username;
         public string password;
     }
 
-    private logInData data;
-    public TextMeshProUGUI logInMessage;
-    public DataManager dataManager;
+    private CreateUserData data;
+    public TextMeshProUGUI createUserMessage;
 
 
     /// <summary>
     /// Activated on click.
     /// </summary>
-    public void LogIn()
+    public void CreateUser()
     {
-        string url = "http://127.0.0.1:5000/login";
+        string url = "http://127.0.0.1:5000/create_user";
         string dataString = JsonUtility.ToJson(data);
         if (data.username != null && data.password != null)
         {
@@ -35,7 +30,7 @@ public class UI_LogIn : MonoBehaviour
         }
         else
         {
-            logInMessage.text = "Por favor, ingresa usuario y contraseña.";
+            createUserMessage.text = "Por favor, ingresa usuario y contraseña.";
         }
     }
 
@@ -59,44 +54,31 @@ public class UI_LogIn : MonoBehaviour
             RetrySecondsDelay = 2
         }).Then(res =>
         {
-            TokenCreator();
             #if UNITY_EDITOR && DEBUG
+            Debug.Log($"Response: {res.Text}");
             #endif
-            logInMessage.text = $"{res.Text}";
+            createUserMessage.text = $"{res.Text}";
         })
         .Catch(err =>
         {
-            if (err.Message == "HTTP/1.1 401 Unauthorized")
+            if (err.Message == "HTTP/1.1 400 Unauthorized")
             {
-                logInMessage.text = "Usuario o contraseña equivocada.";
+                createUserMessage.text = "Ingresa usuario Y contraseña, por favor.";
             }
-            else if (err.Message == "HTTP/1.1 400 Bad Request")
+            else if (err.Message == "HTTP/1.1 403 Forbidden")
             {
-                logInMessage.text = "Ingresa usuario Y contraseña, por favor.";
+                createUserMessage.text = "Usuario ya existente.";
             }
             #if UNITY_EDITOR && DEBUG
+            Debug.LogWarning($"Error: {err.Message}");
             #endif
         })
         .Done(() =>
         {
             #if UNITY_EDITOR && DEBUG
+            Debug.Log("Update Result");
             #endif
         });
-    }
-
-    /// <summary>
-    /// Creates the unique token in case the log in is successful.
-    /// Also sets it on the dataManagement permanent object.
-    /// </summary>
-    private void TokenCreator()
-    { 
-        using (SHA256 sha256Hash = SHA256.Create())
-        {
-            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes($"{data.password}"));
-            string digestedPassword = System.Convert.ToBase64String(bytes);
-            bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes($"{data.username}{digestedPassword}"));
-            dataManager.token = System.Convert.ToBase64String(bytes);
-        }
     }
 
     /// <summary>
