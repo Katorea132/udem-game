@@ -47,6 +47,16 @@ public class UI_LogIn : MonoBehaviour
             RetrySecondsDelay = 2
         }).Then(res =>
         {
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                // Hashes the password
+
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes($"{data.password}"));
+                // Convert byte array to a base64 string
+                string digestedPassword = System.Convert.ToBase64String(bytes);
+                bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes($"{data.username}{digestedPassword}"));
+                dataManager.token = System.Convert.ToBase64String(bytes);
+            }
             #if UNITY_EDITOR && DEBUG
 
             Debug.Log($"Response: {res.Text}");

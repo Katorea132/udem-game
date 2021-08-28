@@ -7,7 +7,7 @@ public class DataManager : MonoBehaviour
     public static DataManager instance;
 
     /// <summary>The player's identity token.</summary>
-    public int token;
+    public string token;
 
     /// <summary>Awake is called when the script instance is being loaded.</summary>
     void Awake()
