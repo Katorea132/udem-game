@@ -28,6 +28,7 @@ class Users(db.Model):
         """
         db.session.add(self)
         db.session.commit()
+        db.session.close()
         return self
 
     def check(self):
@@ -40,6 +41,7 @@ class Users(db.Model):
         """
         user_token = self.query.filter_by(
             unique_token=self.unique_token).first()
+        db.session.close()
         if user_token:
             return True
         return False

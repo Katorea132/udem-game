@@ -37,7 +37,7 @@ def get_question():
         if question:
             return question, 200
     except ValueError:
-        return "There is no body on the request or it is incorrect.", 400
+        return "There is no query string on the request or it is incorrect.", 400
     return "No question has such id.", 404
 
 

@@ -25,6 +25,7 @@ class Questions(db.Model):
         """
         db.session.add(self)
         db.session.commit()
+        db.session.close()
         return self
 
     def answers_checker(self, options):
