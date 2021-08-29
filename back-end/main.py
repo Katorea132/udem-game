@@ -4,6 +4,7 @@ from models.questions import Questions, question_schema, questions_schema
 from models.users import Users, user_schema, users_schema
 from models.matches import Matches, match_schema, matches_schema
 from models.__init__ import app, db
+from sqlalchemy.orm import close_all_sessions
 
 
 @app.route('/add_question', methods=['POST'])
@@ -30,41 +31,55 @@ def get_questions():
 
 @app.route('/get_question', methods={'GET'})
 def get_question():
+    ret = ()
     try:
         question_id = request.args.get('id')
         question = Questions.query.filter_by(id=question_id).first()
         question = question_schema.dump(question)
         if question:
-            return question, 200
+            ret = question, 200
+        else:
+            ret = "No question has such id.", 404
     except ValueError:
-        return "There is no query string on the request or it is incorrect.", 400
-    return "No question has such id.", 404
+        ret = "There is no query string on the request or it is incorrect.", 400
+    finally:
+        close_all_sessions()
+    return ret
 
 
 @app.route('/create_user', methods=['POST'])
 def create_user():
+    ret = ()
     try:
         info = request.json
         new_user = Users(info)
         new_user.save()
+        ret = "User succesfully created.", 200
     except TypeError:
-        return "There is no body on the request or it is incorrect.", 400
+        ret = ("There is no body on the request or it is incorrect.", 400)
     except exc.IntegrityError:
-        return "User already exists.", 403
-    return "User succesfully created.", 200
+        ret = ("User already exists.", 403)
+    finally:
+        close_all_sessions()
+    return ret
 
 
 @app.route('/login', methods=['POST'])
 def login():
+    ret = ()
     try:
         info = request.json
         user = Users(info)
         info = request.json
         if user.check():
-            return "Log in successful.", 200
+            ret = "Log in successful.", 200
+        else:
+            ret = "Incorrect password or username.", 401
     except TypeError:
-        return "There is no body on the request or it is incorrect.", 400
-    return "Incorrect password or username.", 401
+        ret = "There is no body on the request or it is incorrect.", 400
+    finally:
+        close_all_sessions()
+    return ret
 
 
 @app.route('/create_match', methods=['GET'])
