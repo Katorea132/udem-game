@@ -3,6 +3,7 @@ using System.Text;
 using UnityEngine;
 using TMPro;
 using Proyecto26;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Reigns the log in logic.
@@ -63,6 +64,7 @@ public class UI_LogIn : MonoBehaviour
             #if UNITY_EDITOR && DEBUG
             #endif
             logInMessage.text = $"{res.Text}";
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         })
         .Catch(err =>
         {

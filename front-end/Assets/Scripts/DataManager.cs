@@ -20,7 +20,6 @@ public class DataManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
         DontDestroyOnLoad(gameObject);
     }
 }
