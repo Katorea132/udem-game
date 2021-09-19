@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using TMPro;
-using Proyecto26;
 using System.Text;
 using System.Security.Cryptography;
+using System.Collections;
+using UnityEngine.Networking;
 
 public class UI_CreateUser : MonoBehaviour
 {
@@ -26,7 +27,7 @@ public class UI_CreateUser : MonoBehaviour
         string dataString = JsonUtility.ToJson(data);
         if (data.username != null && data.password != null)
         {
-            RequestToBackEnd(url, dataString, "POST");
+            StartCoroutine(Request_Coroutine(url, dataString, "POST"));
         }
         else
         {
@@ -35,50 +36,37 @@ public class UI_CreateUser : MonoBehaviour
     }
 
     /// <summary>
-    /// Using the Proyecto26 package to easily manage the sending
-    /// and receiving of JSON bodies instead of forms. Made in a reusable function
-    /// shape.
+    /// IEnumerator for a custom request coroutine
     /// </summary>
-    /// <param name="url">url to hit with the request.</param>
-    /// <param name="body">The body (if any) for the request.</param>
-    /// <param name="method">The method (For this project, only POST and GET are necessary).</param>
-    public void RequestToBackEnd(string url, string body, string method)
+    /// <param name="url">url to request</param>
+    /// <param name="bodyJsonString"> body in JSON format</param>
+    /// <param name="method">which method to use</param>
+    /// <returns></returns>
+    IEnumerator Request_Coroutine(string url, string bodyJsonString, string method)
     {
-        RestClient.Request(new RequestHelper
+        var request = new UnityWebRequest(url, method);
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(bodyJsonString);
+        request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+        yield return request.SendWebRequest();
+        Debug.Log("Status Code: " + request.responseCode);
+        if (request.responseCode == 200)
         {
-            Uri = url,
-            Method = method,
-            BodyRaw = Encoding.UTF8.GetBytes(body),
-            ContentType = "application/json",
-            Retries = 3,
-            RetrySecondsDelay = 2
-        }).Then(res =>
+            createUserMessage.text = "Creación exitosa";
+        }
+        else if (request.responseCode == 400)
         {
-            #if UNITY_EDITOR && DEBUG
-            Debug.Log($"Response: {res.Text}");
-            #endif
-            createUserMessage.text = $"{res.Text}";
-        })
-        .Catch(err =>
+            createUserMessage.text = "Ingresa usuario Y contraseña, por favor.";
+        }
+        else if (request.responseCode == 403)
         {
-            if (err.Message == "HTTP/1.1 400 Unauthorized")
-            {
-                createUserMessage.text = "Ingresa usuario Y contraseña, por favor.";
-            }
-            else if (err.Message == "HTTP/1.1 403 Forbidden")
-            {
-                createUserMessage.text = "Usuario ya existente.";
-            }
-            #if UNITY_EDITOR && DEBUG
-            Debug.LogWarning($"Error: {err.Message}");
-            #endif
-        })
-        .Done(() =>
+            createUserMessage.text = "Usuario ya existe.";
+        }
+        else
         {
-            #if UNITY_EDITOR && DEBUG
-            Debug.Log("Update Result");
-            #endif
-        });
+            createUserMessage.text = request.error;
+        }
     }
 
     /// <summary>
