@@ -28,7 +28,7 @@ class Matches(db.Model):
         """
         db.session.add(self)
         db.session.commit()
-        db.session.close()
+        # db.session.close()
         return self
 
     def random_questions_generator(self, sample_num):
