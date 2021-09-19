@@ -2,7 +2,9 @@
 using System.Text;
 using UnityEngine;
 using TMPro;
-using Proyecto26;
+using UnityEngine.SceneManagement;
+using System.Collections;
+using UnityEngine.Networking;
 
 /// <summary>
 /// Reigns the log in logic.
@@ -31,7 +33,7 @@ public class UI_LogIn : MonoBehaviour
         string dataString = JsonUtility.ToJson(data);
         if (data.username != null && data.password != null)
         {
-            RequestToBackEnd(url, dataString, "POST");
+            StartCoroutine(Request_Coroutine(url, dataString, "POST"));
         }
         else
         {
@@ -40,54 +42,40 @@ public class UI_LogIn : MonoBehaviour
     }
 
     /// <summary>
-    /// Using the Proyecto26 package to easily manage the sending
-    /// and receiving of JSON bodies instead of forms. Made in a reusable function
-    /// shape.
+    /// Request sender
     /// </summary>
-    /// <param name="url">url to hit with the request.</param>
-    /// <param name="body">The body (if any) for the request.</param>
-    /// <param name="method">The method (For this project, only POST and GET are necessary).</param>
-    public void RequestToBackEnd(string url, string body, string method)
+    /// <param name="url">URL to send request to</param>
+    /// <param name="bodyJsonString">Body in JSON format to send</param>
+    /// <param name="method">method for request</param>
+    /// <returns></returns>
+    IEnumerator Request_Coroutine(string url, string bodyJsonString, string method)
     {
-        RestClient.Request(new RequestHelper
-        {
-            Uri = url,
-            Method = method,
-            BodyRaw = Encoding.UTF8.GetBytes(body),
-            ContentType = "application/json",
-            Retries = 3,
-            RetrySecondsDelay = 2
-        }).Then(res =>
+        var request = new UnityWebRequest(url, method);
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(bodyJsonString);
+        request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+        yield return request.SendWebRequest();
+        Debug.Log("Status Code: " + request.responseCode);
+        if (request.responseCode == 200)
         {
             TokenCreator();
-            #if UNITY_EDITOR && DEBUG
-            #endif
-            logInMessage.text = $"{res.Text}";
-        })
-        .Catch(err =>
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }
+        else if (request.responseCode == 400)
         {
-            if (err.Message == "HTTP/1.1 401 Unauthorized")
-            {
-                logInMessage.text = "Usuario o contraseña equivocada.";
-            }
-            else if (err.Message == "HTTP/1.1 400 Bad Request")
-            {
-                logInMessage.text = "Ingresa usuario Y contraseña, por favor.";
-            }
-            #if UNITY_EDITOR && DEBUG
-            #endif
-        })
-        .Done(() =>
+            logInMessage.text = "Ingresa usuario Y contraseña, por favor.";
+        }
+        else if (request.responseCode == 401)
         {
-            #if UNITY_EDITOR && DEBUG
-            #endif
-        });
+            logInMessage.text = "Usuario o contraseña equivocada.";
+        }
+        else
+        {
+            logInMessage.text = request.error;
+        }
     }
 
-    /// <summary>
-    /// Creates the unique token in case the log in is successful.
-    /// Also sets it on the dataManagement permanent object.
-    /// </summary>
     private void TokenCreator()
     { 
         using (SHA256 sha256Hash = SHA256.Create())
