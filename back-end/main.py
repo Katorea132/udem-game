@@ -24,9 +24,20 @@ def add_question():
 
 @app.route('/get_questions', methods=['GET'])
 def get_questions():
-    questions = Questions.query.all()
-    questions = questions_schema.dump(questions)
-    return jsonify(questions)
+    ret = ()
+    try:
+        questions_id = request.args.get('id')
+        questions = Matches.query.filter_by(id=questions_id).first()
+        questions = match_schema.dump(questions)
+        if questions:
+            ret = questions, 200
+        else:
+            ret = "No match has such id.", 404
+    except ValueError:
+        ret = "There is no query string on the request or it is incorrect.", 400
+    finally:
+        close_all_sessions()
+    return ret
 
 
 @app.route('/get_question', methods={'GET'})
