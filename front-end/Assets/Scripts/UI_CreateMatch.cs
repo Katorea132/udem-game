@@ -9,6 +9,11 @@ public class UI_CreateMatch : MonoBehaviour
 {
     public DataManager dataManager;
 
+    private struct MatchData
+    {
+        public string match_id;
+    }
+
     private void Start()
     {
         GameObject.Find("CreateMatchButton").GetComponent<Button>().onClick.AddListener(CreateMatch);
@@ -24,6 +29,7 @@ public class UI_CreateMatch : MonoBehaviour
     /// </summary>
     IEnumerator Request_Coroutine()
     {
+        MatchData match_id;
         string url = "http://127.0.0.1:5000/create_match";
         string method = "GET";
         var request = new UnityWebRequest(url, method);
@@ -33,8 +39,10 @@ public class UI_CreateMatch : MonoBehaviour
         Debug.Log("Status Code: " + request.responseCode);
         if (request.responseCode == 200)
         {
-            dataManager.match_id = request.downloadHandler.text;
+            match_id = JsonUtility.FromJson<MatchData>(request.downloadHandler.text);
+            dataManager.match_id = match_id.match_id;
             Debug.Log(dataManager.match_id);
+            GameObject.Find("MatchId").GetComponent<Text>().text = string.Format("Match Id: {0}", dataManager.match_id);
         }
         else
         {
