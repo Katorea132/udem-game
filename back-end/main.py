@@ -30,7 +30,7 @@ def get_questions():
         questions = Matches.query.filter_by(id=questions_id).first()
         questions = match_schema.dump(questions)
         if questions:
-            ret = questions, 200
+            ret = questions['questions_id'], 200
         else:
             ret = "No match has such id.", 404
     except ValueError:
