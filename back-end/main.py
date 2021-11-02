@@ -5,7 +5,7 @@ from models.users import Users, user_schema, users_schema
 from models.matches import Matches, match_schema, matches_schema
 from models.__init__ import app, db
 from sqlalchemy.orm import close_all_sessions
-from auxiliar_modules.aux import dict_normalizer
+from auxiliar_modules.auxi import dict_normalizer
 
 
 @app.route('/add_question', methods=['POST'])
