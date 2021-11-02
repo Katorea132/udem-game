@@ -21,7 +21,6 @@ public class UI_LogIn : MonoBehaviour
 
     private logInData data;
     public TextMeshProUGUI logInMessage;
-    public DataManager dataManager;
 
 
     /// <summary>
@@ -83,7 +82,7 @@ public class UI_LogIn : MonoBehaviour
             byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes($"{data.password}"));
             string digestedPassword = System.Convert.ToBase64String(bytes);
             bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes($"{data.username}{digestedPassword}"));
-            dataManager.token = System.Convert.ToBase64String(bytes);
+            DataManager.instance.token = System.Convert.ToBase64String(bytes);
         }
     }
 

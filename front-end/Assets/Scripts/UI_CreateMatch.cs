@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 public class UI_CreateMatch : MonoBehaviour
 {
-    public DataManager dataManager;
 
     private struct MatchData
     {
@@ -40,9 +39,9 @@ public class UI_CreateMatch : MonoBehaviour
         if (request.responseCode == 200)
         {
             match_id = JsonUtility.FromJson<MatchData>(request.downloadHandler.text);
-            dataManager.match_id = match_id.match_id;
-            Debug.Log(dataManager.match_id);
-            GameObject.Find("MatchId").GetComponent<Text>().text = string.Format("Match Id: {0}", dataManager.match_id);
+            DataManager.instance.match_id = match_id.match_id;
+            Debug.Log(DataManager.instance.match_id);
+            GameObject.Find("MatchId").GetComponent<Text>().text = string.Format("Match Id: {0}", DataManager.instance.match_id);
         }
         else
         {

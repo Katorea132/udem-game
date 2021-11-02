@@ -5,23 +5,23 @@ using UnityEngine.SceneManagement;
 
 public class UI_StartMatch : MonoBehaviour
 {
-    public DataManager dataManager;
 
     public void ReadMatch(string match)
     {
         if (match != "")
         {
-            dataManager.match_id = match;
+            DataManager.instance.match_id = match;
+            Debug.Log(DataManager.instance.match_id);
         }
         else
         {
-            dataManager.match_id = null;
+            DataManager.instance.match_id = null;
         }
     }
 
     public void StartQuestions()
     {
-        if (dataManager.match_id != null)
+        if (DataManager.instance.match_id != null)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
