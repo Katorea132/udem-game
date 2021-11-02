@@ -5,6 +5,7 @@ from models.users import Users, user_schema, users_schema
 from models.matches import Matches, match_schema, matches_schema
 from models.__init__ import app, db
 from sqlalchemy.orm import close_all_sessions
+from auxiliar_modules.aux import dict_normalizer
 
 
 @app.route('/add_question', methods=['POST'])
@@ -42,20 +43,20 @@ def get_questions():
 
 @app.route('/get_question', methods={'GET'})
 def get_question():
-    ret = ()
+    ret = []
     try:
-        question_id = request.args.get('id')
-        question = Questions.query.filter_by(id=question_id).first()
-        question = question_schema.dump(question)
-        if question:
-            ret = question, 200
-        else:
-            ret = "No question has such id.", 404
+        for question_id in request.args.get('id').split():
+            question = Questions.query.filter_by(id=question_id).first()
+            question = question_schema.dump(question)
+            if question:
+                ret.append(dict_normalizer(question))
+            else:
+                return "No question has such id.", 404
     except ValueError:
         ret = "There is no query string on the request or it is incorrect.", 400
     finally:
         close_all_sessions()
-    return ret
+    return jsonify(ret), 200
 
 
 @app.route('/create_user', methods=['POST'])
