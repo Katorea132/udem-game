@@ -1,6 +1,5 @@
 
 def dict_normalizer(ugly_dictionary):
-    print(ugly_dictionary)
     pretty_dict = {
         "question": ugly_dictionary['question'],
         "answers": "",
@@ -15,6 +14,11 @@ def dict_normalizer(ugly_dictionary):
 
     return pretty_dict
 
+def scorizer(match):
+    ret = ""
+    for k, v in match['score']['scores'].items():
+        ret += k + "\t" + str(v) + "\n"
+    return ret
 
 
 # //     {"questions":[

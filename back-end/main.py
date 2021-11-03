@@ -5,7 +5,7 @@ from models.users import Users, user_schema, users_schema
 from models.matches import Matches, match_schema, matches_schema
 from models.__init__ import app, db
 from sqlalchemy.orm import close_all_sessions
-from auxiliar_modules.auxi import dict_normalizer
+from auxiliar_modules.auxi import dict_normalizer, scorizer
 
 
 @app.route('/add_question', methods=['POST'])
@@ -117,6 +117,21 @@ def add_score():
     except KeyError:
         return "The body has an incorrect format.", 400
     return "Invalid match.", 400
+
+@app.route('/get_score', methods=['GET'])
+def get_scores():
+    try:
+        id = request.args.get('id')
+        match = Matches.query.filter_by(id=id).first()
+        if match:
+            match = match_schema.dump(match)
+            return scorizer(match), 200
+    except TypeError:
+        return "There is no body on the request or it is incorrect.", 400
+    except KeyError:
+        return "The body has an incorrect format.", 400
+    return "Invalid match.", 400
+
 
 
 if __name__ == '__main__':
