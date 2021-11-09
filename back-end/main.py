@@ -31,6 +31,7 @@ def get_questions():
         questions = Matches.query.filter_by(id=questions_id).first()
         questions = match_schema.dump(questions)
         if questions:
+            print(questions['questions_id'])
             ret = questions['questions_id'], 200
         else:
             ret = "No match has such id.", 404
@@ -45,7 +46,7 @@ def get_questions():
 def get_question():
     ret = []
     try:
-        for question_id in request.args.get('id').split():
+        for question_id in request.args.get('id').split("-"):
             question = Questions.query.filter_by(id=question_id).first()
             question = question_schema.dump(question)
             if question:
@@ -56,6 +57,7 @@ def get_question():
         ret = "There is no query string on the request or it is incorrect.", 400
     finally:
         close_all_sessions()
+    print(jsonify(ret))
     return jsonify(ret), 200
 
 
@@ -125,6 +127,7 @@ def get_scores():
         match = Matches.query.filter_by(id=id).first()
         if match:
             match = match_schema.dump(match)
+            print(match)
             return scorizer(match), 200
     except TypeError:
         return "There is no body on the request or it is incorrect.", 400
