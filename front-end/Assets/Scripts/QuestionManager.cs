@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,15 +7,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class QuestionManager : MonoBehaviour
 {
 
     public TextMeshProUGUI[] options;
     public TextMeshProUGUI textQuestion;
-    private int index = -1;
-    private string questionNumbers;
+    public int index = -1;
+    public string questionNumbers = "";
 
 
     [Serializable]
@@ -34,7 +32,7 @@ public class QuestionManager : MonoBehaviour
         public List<Question> questioni;
     }
 
-    public Root questions;
+    public Root questions = new Root();
 
     [Serializable]
     public class ScoreInfo
@@ -60,11 +58,6 @@ public class QuestionManager : MonoBehaviour
         GetQuestions();
     }
 
-    private void Start()
-    {
-        GetEachQuestion();
-    }
-
     void GetQuestions() => StartCoroutine(Request_Coroutine_Questions());
 
     /// <summary>
@@ -81,30 +74,34 @@ public class QuestionManager : MonoBehaviour
         Debug.Log("Status Code: " + request.responseCode);
         if (request.responseCode == 200)
         {
-            questionNumbers = request.downloadHandler.text;
+            this.questionNumbers = request.downloadHandler.text;
         }
         else
         {
 
             Debug.Log(request.error);
         }
+        GetEachQuestion();
     }
 
-    void GetEachQuestion() => StartCoroutine(Request_Coroutine(questionNumbers));
+    void GetEachQuestion() => StartCoroutine(Request_Coroutine());
 
-    IEnumerator Request_Coroutine(string id)
+    public String linkBuilder()
     {
-        string url = "http://127.0.0.1:5000/get_question?id=" + id;
-        string method = "GET";
-        var request = new UnityWebRequest(url, method);
+        return "http://127.0.0.1:5000/get_question?id=" + this.questionNumbers.Replace(" ", "-");
+    }
+
+    IEnumerator Request_Coroutine()
+    {
+        var request = new UnityWebRequest(linkBuilder());
         request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
         yield return request.SendWebRequest();
-        Debug.Log("Status Code: " + request.responseCode + id);
+        Debug.Log("Status Code: " + request.responseCode + this.questionNumbers);
         if (request.responseCode == 200)
         {
-            this.questions = JsonConvert.DeserializeObject<Root>("{\"questioni\":" + request.downloadHandler.text + "}");
-            Debug.Log(JsonConvert.DeserializeObject<Root>("{\"questions\":" + request.downloadHandler.text + "}"));
+            this.questions = JsonUtility.FromJson<Root>("{\"questioni\":" + request.downloadHandler.text + "}");
+            // Debug.Log(JsonConvert.DeserializeObject<Root>("{\"questions\":" + request.downloadHandler.text + "}"));
             //Debug.Log("{\"questions\":" + request.downloadHandler.text + "}");
         }
         else
@@ -116,10 +113,10 @@ public class QuestionManager : MonoBehaviour
     public void SetQuestion()
     {
         int optionIndex = 0;
-        if (index < this.questions.questioni.Count)
+        if (this.index < this.questions.questioni.Count)
         {
-            textQuestion.text = this.questions.questioni[index].question;
-            foreach (string answer in this.questions.questioni[index].answers.Split('/'))
+            textQuestion.text = this.questions.questioni[this.index].question;
+            foreach (string answer in this.questions.questioni[this.index].answers.Split('/'))
             {
                 options[optionIndex].text = answer;
                 optionIndex++;
@@ -135,16 +132,16 @@ public class QuestionManager : MonoBehaviour
     {
         GameObject go = EventSystem.current.currentSelectedGameObject;
         Debug.Log("clickity clakitty" + go.GetComponentInChildren<TextMeshProUGUI>().text);
-        if (index > -1 && index < this.questions.questioni.Count)
+        if (this.index > -1 && this.index < this.questions.questioni.Count)
         {
             scoreInfo.answer = go.GetComponentInChildren<TextMeshProUGUI>().text;
-            scoreInfo.question = this.questions.questioni[index].id.ToString();
+            scoreInfo.question = this.questions.questioni[this.index].id.ToString();
             scoreInfo.time = 100;
             scoreRoot.id = DataManager.instance.match_id;
             scoreRoot.token = DataManager.instance.token;
             scoreRoot.score_info = scoreInfo;
-            Debug.Log(JsonConvert.SerializeObject(scoreRoot));
-            PostScore(JsonConvert.SerializeObject(scoreRoot));
+            // Debug.Log(JsonConvert.SerializeObject(scoreRoot));
+            PostScore(JsonUtility.ToJson(scoreRoot));
         }
         this.index++;
         SetQuestion();
